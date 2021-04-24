@@ -11,6 +11,9 @@
 
 # Sample Screen
 
+![alt text](https://github.com/winterchow95/FormBuilder/blob/main/img/img0.PNG)
+![alt text](https://github.com/winterchow95/FormBuilder/blob/main/img/img1.PNG)
+
 # Technical Implementation
 
 Used react hook (useState) to manage single page state management 

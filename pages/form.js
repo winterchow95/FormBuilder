@@ -1,16 +1,22 @@
-import React, { useState } from 'react'
-import { View, Text, Button, TextInput, TouchableOpacity, Modal, Switch, StyleSheet, Dimensions, ScrollView } from 'react-native'
+import React, { useState, useEffect } from 'react'
+import { View, Text, Button, TextInput, TouchableOpacity, Modal, Switch, StyleSheet, Dimensions, ScrollView, Alert } from 'react-native'
 import CheckBox from '@react-native-community/checkbox';
-import {useSelector} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import {NumberInput} from '../component/numberInput';
+import {setDataAction} from '../redux/action';
+import { StackActions } from '@react-navigation/native';
 
 const window = Dimensions.get("window");
 
 //second page - form page
-export default function Form({navigation}){
+const Form = (props) => {
   
+  const dispatcher = useDispatch();
+
   //use selector to retrieve data dispatched
   const [data, setData] = useState(useSelector((state) => state.data));
+  const keycounter = useSelector((state) => state.keycount);
+  const [modalToggle, setModalToggle] = useState(false);
 
   //update boolean or switch state
   const updateValue = (key, new_value) => {
@@ -27,6 +33,15 @@ export default function Form({navigation}){
     setData(_data);
   }
 
+  const returnPage = (data, key)=>{
+      const _data = {...data};
+      dispatcher(setDataAction(_data, key));
+      
+      props.navigation.dispatch(
+        StackActions.replace('ComponentListPage')
+      );
+  }
+
   return (
     
     <View style={{flex: 1}}>
@@ -40,6 +55,26 @@ export default function Form({navigation}){
                 ))}
             </ScrollView>
         </View>
+
+        <Modal transparent = {true} visible = {modalToggle}>
+          <View style={styles.modalBackgroundView}>
+            <View style={styles.modalView}>
+              <Text style={{fontSize: 24, marginBottom: 40, textAlign: 'center'}}>Clear Form?</Text>
+                <View style={styles.buttonContainer}>
+                  <View style={styles.buttonView}><Button title="Yes" onPress={() => {returnPage([], 0)}}/></View>
+                  <View style={styles.buttonView}><Button title="No" onPress={() => {returnPage(data, keycounter)}} /></View>
+                </View>
+                <View style={styles.buttonContainer}>
+                  <View style={styles.buttonView}><Button title="Cancel" onPress={() => setModalToggle(!modalToggle)} /></View>
+                </View>
+            </View>
+          </View>
+        </Modal>
+
+        <View style={styles.buttonContainer}>
+        <View style={styles.buttonView}><Button title="Back" onPress={() => setModalToggle(!modalToggle)}/></View>
+        <View style={styles.buttonView}><Button title="Validate" onPress={()=>{}} /></View>
+      </View>
     </View>
 
   );
@@ -79,6 +114,8 @@ export default function Form({navigation}){
 
 }
 
+export default Form;
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -106,6 +143,28 @@ const styles = StyleSheet.create({
     title: {
         width: window.width * 0.7,
         fontSize: 14,
-    }
+    },
+    buttonContainer: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      alignItems: 'center',
+    },
+    buttonView:{
+      width: '45%',
+      margin: 10,
+    },
+    modalBackgroundView: {
+      backgroundColor: "#000000aa",
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    modalView:{
+      backgroundColor: '#ffffff',
+      flexDirection: 'column',
+      justifyContent: 'space-between',
+      padding: '10%',  
+      borderRadius: 20,
+    },
 })
 

@@ -1,14 +1,16 @@
-import React, {useState } from 'react'
-import { View, Text, Button, TextInput, TouchableOpacity, Modal, StyleSheet, ScrollView } from 'react-native'
+import React, {useState , useEffect } from 'react'
+import { View, Text, Button, TextInput, TouchableOpacity, Modal, StyleSheet, ScrollView, Alert } from 'react-native'
 import {Picker} from '@react-native-picker/picker';
-import {useDispatch} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import {setDataAction} from '../redux/action';
+import { StackActions } from '@react-navigation/native';
+
 
 // first page - component list page
-export default function ComponentList({navigation}){
+const ComponentList = (props) => {
+
   //dispatcher to dispatch store data action
   const dispatcher = useDispatch();
-  
   //modal toggle variable
   const [modalToggle, setModalToggle] = useState(false);
 
@@ -19,10 +21,10 @@ export default function ComponentList({navigation}){
   const [componentTitle, setComponentTitle] = useState('');
 
   //array that stores all created UI components
-  const [components, setComponents] = useState([]);
+  const [components, setComponents] = useState(useSelector((state) => state.data));
 
   //key counter to increment UI component key attribute
-  const [keycounter, setKeyCounter] = useState(0);
+  const [keycounter, setKeyCounter] = useState(useSelector((state) => state.keycount));
   
   //dummy configuration table to show available UI component types
   const componentTypes = new Map();
@@ -30,6 +32,10 @@ export default function ComponentList({navigation}){
   componentTypes.set(2, "Number Input");
   componentTypes.set(3, "Boolean Input");
   componentTypes.set(4, "CheckBox Input");
+
+
+
+
 
   //create new UI component
   const addComponent = (new_type, new_title)=>{
@@ -47,6 +53,8 @@ export default function ComponentList({navigation}){
     setComponents(_components);
     //update counter
     setKeyCounter(_key);
+
+    dispatcher(setDataAction(_components, _key));
     //close modal
     setModalToggle(!modalToggle);
     //reset UI type and UI title
@@ -58,18 +66,21 @@ export default function ComponentList({navigation}){
   const deleteComponent = (key)=>{
     const _components = components.filter((component,index) => index != key);
     setComponents(_components);
+    dispatcher(setDataAction(_components, key));
   }
 
   //reset array and counter to clear all components
-  const clearComponents = (key)=>{
+  const clearComponents = ()=>{
     setComponents([]);
     setKeyCounter(0);
+    dispatcher(setDataAction([], 0));
   }
 
   //dispatch components to second page using redux and navigate to second page
-  const generateUI = (data)=> {
-    dispatcher(setDataAction(data));
-    navigation.navigate('FormPage');
+  const generateUI = ()=> {
+    props.navigation.dispatch(
+      StackActions.replace('FormPage')
+    );
   }
 
   return (
@@ -119,12 +130,14 @@ export default function ComponentList({navigation}){
         <View style={styles.buttonView}><Button title="Clear" onPress={clearComponents} /></View>
       </View>
       <View style={styles.buttonContainer}>
-        <View style={styles.fullButtonView}><Button title="Generate" onPress={() => generateUI(components)} /></View>
+        <View style={styles.fullButtonView}><Button title="Generate" onPress={() => generateUI()} /></View>
       </View>
       
     </View>
   );
 }
+
+export default ComponentList;
 
 const styles = StyleSheet.create({
   container: {
